@@ -6,14 +6,16 @@ pygame.mixer.init()
 '''sounds'''
 game =pygame.mixer.music.load('game.wav')
 bite =pygame.mixer.Sound('bite.wav')
+bite.set_volume(0.9)
 gameover =pygame.mixer.Sound('gameover.wav')
-pygame.mixer.music.set_volume(0.1)
-
+gameover.set_volume(0.9)
+pygame.mixer.music.set_volume(0.3)
 '''colors'''
 black=(0,0,0); white=(255,255,255); red =(255,0,0); green = (0,255,0); cyan = (0,255,255);
 '''creating game window'''
 width = 1280; height = 720;gamewindow = pygame.display.set_mode((width, height))
 pygame .display.set_caption('snake game'); font = pygame.font.SysFont(None, 40)
+list = [(0,0),(0,height),(width,height),(width,0)]
 '''welcome screen'''
 def welcome():
     exitgame = False
@@ -22,7 +24,6 @@ def welcome():
         scoretext('WELCOME!', red, width / 4, height -600)
         scoretext('Press Any Key To Start', red, width/4,height-550)
         scoretext('Use Arrow Keys To Move', red, width / 4, height-500)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exitgame = True
@@ -40,18 +41,15 @@ def snakesize(gamewindow,colour,snakelist,size):
 '''GAME LOOP---------------------------------------------------------------------------------------------GAME LOOP'''
 def GameLoop():
     pygame.mixer.music.play(-1)
-
     '''game variables'''
     GameExit = False ; GameOver = False
-    snakex = 10; snakey = 30; size = 30
+    snakex = width/2; snakey = height/2; size = 30
     clock = pygame.time.Clock() ; fps = 60
     velocityx = 0; velocityy = 0; initialvelocity = 5
-    foodx = random.randint(0, width - size); foody = random.randint(0, height - size)
+    foodx = random.randint(0, int((width-size)/30))*30; foody = random.randint(0, int((height-size)/30))*30
     score = 0
     snakelist = [];  snakelength = 1
     ggimage = pygame.image.load('gg.jpg')
-
-
     if (not os.path.exists('highscore.txt')):
         with open('highscore.txt','w') as h:
             h.write('0')
@@ -59,7 +57,6 @@ def GameLoop():
     with open('highscore.txt', 'r') as h:
         highscore = h.read()
     while not GameExit:
-
         if GameOver:
             gamewindow.blit((ggimage),(0,0))
             with open ('highscore.txt','w') as h:
@@ -71,10 +68,7 @@ def GameLoop():
                     GameExit = True
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     GameLoop()
-
-
         else:
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     GameExit = True
@@ -82,7 +76,6 @@ def GameLoop():
                     if event.key == pygame.K_RIGHT:
                         velocityx = initialvelocity
                         velocityy = 0
-
                     if event.key == pygame.K_LEFT:
                         velocityx = -initialvelocity
                         velocityy = 0
@@ -95,21 +88,18 @@ def GameLoop():
             snakex += velocityx
             snakey += velocityy
             if abs(snakex - foodx) < size and abs(snakey - foody) < size:
-                score += 10
-                foodx = random.randint(0, width-size)
-                foody = random.randint(0, height-size)
-                snakelength += 2
-                initialvelocity +=1
                 pygame.mixer.music.pause()
                 pygame.mixer.Sound.play(bite)
                 pygame.mixer.music.unpause()
-
-
+                score += 10
+                foodx = random.randint(0, int((width-size)/30))*30
+                foody = random.randint(0, int((height-size)/30))*30
+                snakelength += 2
+                initialvelocity +=1
                 if score >int(highscore):
                     highscore = score
-
-
             gamewindow.fill(black)
+            pygame.draw.lines(gamewindow, red, True, list, 5)
             scoretext("Score:" + str(score), cyan, 5, 5)
             scoretext("HighScore:" + str(highscore), cyan, 1000, 5)
             pygame.draw.rect(gamewindow, green, (snakex,snakey,size,size))
@@ -123,8 +113,6 @@ def GameLoop():
                 GameOver = True
                 pygame.mixer.music.stop()
                 pygame.mixer.Sound.play(gameover)
-
-
             pygame.draw.rect(gamewindow, red, (foodx, foody, size, size))
             snakesize(gamewindow, green, snakelist, size)
         pygame.display.update()
@@ -132,6 +120,3 @@ def GameLoop():
     pygame.quit()
     quit()
 welcome()
-
-
-
